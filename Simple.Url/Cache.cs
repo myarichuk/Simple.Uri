@@ -6,7 +6,8 @@ namespace Simple.Url
 {
     internal static class Cache
     {
-        internal readonly static ObjectPool<List<StringSegment>> SegmentListCache = new DefaultObjectPool<List<StringSegment>>(new ListOfPtrPooledObjectPolicy<StringSegment>());
+        internal readonly static ObjectPool<List<StringSegment>> PathSegmentListCache = new DefaultObjectPool<List<StringSegment>>(new ListOfPtrPooledObjectPolicy<StringSegment>());
+        internal readonly static ObjectPool<List<(StringSegment Name, StringSegment Value)>> QueryParameterListCache = new DefaultObjectPool<List<(StringSegment Name, StringSegment Value)>>(new ListOfPtrPooledObjectPolicy<(StringSegment Name, StringSegment Value)>());
     }
 
     internal class ListOfPtrPooledObjectPolicy<T> : PooledObjectPolicy<List<T>>

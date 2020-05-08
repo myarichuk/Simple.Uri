@@ -1,49 +1,55 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Runtime.CompilerServices;
-using Simple.Arena;
 
 namespace Simple.Url
 {
     public enum Schema
     {
+        Unsupported,
         Http,
         Https
     }
 
-    public struct UrlBuilder : IFormattable
+    public struct Url : IFormattable
     {
         private const string UrlPathSeparator = "/";
+        private const string QueryParamSeparator = "&";
 
         private readonly Arena.Arena _arena;
         private readonly StringSegment _baseUrl;
-        private readonly List<StringSegment> _urlPathSegments;
-        
+        private readonly List<StringSegment> _pathSegments;
+
+        public readonly List<(StringSegment Name, StringSegment Value)> _queryParameters;
 
         public readonly Schema Schema;
 
+        public IReadOnlyList<StringSegment> Path => _pathSegments;
+
         /// <exception cref="T:System.ArgumentException">base path must have only HTTPS or HTTP schema</exception>
-        public UrlBuilder(Arena.Arena arena, ReadOnlySpan<char> baseUrl)
+        public Url(Arena.Arena arena, ReadOnlySpan<char> fullUrl)
         {
             _arena = arena ?? throw new ArgumentNullException(nameof(arena));
-            if(baseUrl.IsEmpty || baseUrl.IsWhiteSpace())
-                throw new ArgumentNullException(nameof(baseUrl));
+            if(fullUrl.IsEmpty || fullUrl.IsWhiteSpace())
+                throw new ArgumentNullException(nameof(fullUrl));
 
             if(_arena.IsDisposed)
                 throw new ObjectDisposedException(nameof(arena));
 
-            _urlPathSegments = Cache.SegmentListCache.Get();
-            _baseUrl = baseUrl;
+            _pathSegments = Cache.PathSegmentListCache.Get();
+            _queryParameters = Cache.QueryParameterListCache.Get();
+            _baseUrl = fullUrl;
             
-            if (baseUrl.StartsWith("http://", StringComparison.InvariantCultureIgnoreCase))
-                Schema = Schema.Http;
-            else if (baseUrl.StartsWith("https://", StringComparison.InvariantCultureIgnoreCase))
-                Schema = Schema.Https;
-            else
-                throw new ArgumentException("base path must have only HTTPS or HTTP schema", nameof(baseUrl));
+            if(!UrlHelper.TryParseSchema(fullUrl, out var parsedSchema))
+                throw new ArgumentException("base path must have only HTTPS or HTTP schema", nameof(fullUrl));
 
-            _arena.Disposed += OnDispose;
+            Schema = parsedSchema;
+
+            if(!UrlHelper.TryParsePath(fullUrl, _pathSegments))
+                throw new ArgumentException("Failed to parse url path");
+
+            _arena.OnReset += OnDispose;
+            _arena.OnDispose += OnDispose;
         }
 
         public void AddPathSegment(ReadOnlySpan<char> pathSegment)
@@ -52,23 +58,24 @@ namespace Simple.Url
                 ThrowOutOfMemory();
 
             pathSegment.CopyTo(storedPathSegment);
-            _urlPathSegments.Add(storedPathSegment.AsStringSegment());
+            _pathSegments.Add(storedPathSegment.AsStringSegment());
         }
 
-        public string GenerateUrl()
+        public string AsString()
         {
             var length = 
                 _baseUrl.Length +  //path size
-                _urlPathSegments.Count; //path separators
+                _pathSegments.Count; //path separators
 
             //note: this can be done with Linq's Sum(), but that will do delegate allocation
-            for(int i = 0; i < _urlPathSegments.Count; i++)
-                length += _urlPathSegments[i].Length;
+            for(int i = 0; i < _pathSegments.Count; i++)
+                length += _pathSegments[i].Length;
 
-            return string.Create(length, (_baseUrl, _urlPathSegments), 
+            return string.Create(length, (_baseUrl, _pathSegments, _queryParameters), 
                 (Span<char> output,
                         (StringSegment baseUrl, 
-                         List<StringSegment> segments) urlParts) =>
+                         List<StringSegment> segments,
+                         List<(StringSegment Name, StringSegment Value)> queryParams) urlParts) =>
                 {
                     var offset = 0;
                     var separatorAsSpan = UrlPathSeparator.AsSpan();
@@ -97,15 +104,20 @@ namespace Simple.Url
         private static void ThrowOutOfMemory() =>
             throw new OutOfMemoryException(
                 "Not enough memory to store a path segment. Consider enlarging Arena allocator max size.");
-
+       
         private void OnDispose()
         {
-            Cache.SegmentListCache.Return(_urlPathSegments);
-            _arena.Disposed -= OnDispose; //prevent memory leak
+            Cache.PathSegmentListCache.Return(_pathSegments);
+            Cache.QueryParameterListCache.Return(_queryParameters);
+
+            _arena.OnReset -= OnDispose; //prevent memory leak
+            _arena.OnDispose -= OnDispose;
         }
 
-        public override string ToString() => GenerateUrl();
+        public static implicit operator string(Url url) => url.AsString();
 
-        public string ToString(string format, IFormatProvider formatProvider) => GenerateUrl();
+        public override string ToString() => AsString();
+
+        public string ToString(string format, IFormatProvider formatProvider) => AsString();
     }
 }

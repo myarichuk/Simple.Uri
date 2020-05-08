@@ -1,8 +1,10 @@
 ﻿using Simple.Arena;
 using System;
+using System.Diagnostics;
 
 namespace Simple.Url
 {
+    [DebuggerDisplay("{AsSpan().ToString()}")]
     public readonly struct StringSegment
     {
         internal readonly IntPtr Ptr;
@@ -14,7 +16,13 @@ namespace Simple.Url
             Length = length;
         }
 
+        public override string ToString() => AsSpan().ToString();
+
         public Span<char> AsSpan() => this;
+
+        public ReadOnlySpan<char> AsReadOnlySpan() => this;
+
+        public static implicit operator StringSegment(string str) => str.AsSpan().AsStringSegment();            
 
         public static implicit operator StringSegment(ReadOnlySpan<char> span) =>
             new StringSegment(span.ToIntPtr(), span.Length);
