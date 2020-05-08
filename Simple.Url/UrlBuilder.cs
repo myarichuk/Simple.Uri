@@ -12,32 +12,36 @@ namespace Simple.Url
         Https
     }
 
-    public struct Url : IFormattable
+    public struct UrlBuilder : IFormattable
     {
         private const string UrlPathSeparator = "/";
 
         private readonly Arena.Arena _arena;
-        private readonly (IntPtr ptr, int size) _baseUrl;
-        private readonly List<(IntPtr ptr, int size)> _urlPathSegments;
+        private readonly StringSegment _baseUrl;
+        private readonly List<StringSegment> _urlPathSegments;
+        
 
         public readonly Schema Schema;
 
         /// <exception cref="T:System.ArgumentException">base path must have only HTTPS or HTTP schema</exception>
-        public Url(Arena.Arena arena, ReadOnlySpan<char> basePath)
+        public UrlBuilder(Arena.Arena arena, ReadOnlySpan<char> baseUrl)
         {
             _arena = arena ?? throw new ArgumentNullException(nameof(arena));
+            if(baseUrl.IsEmpty || baseUrl.IsWhiteSpace())
+                throw new ArgumentNullException(nameof(baseUrl));
+
             if(_arena.IsDisposed)
                 throw new ObjectDisposedException(nameof(arena));
 
             _urlPathSegments = Cache.SegmentListCache.Get();
-            _baseUrl = (basePath.ToIntPtr(), basePath.Length);
+            _baseUrl = baseUrl;
             
-            if (basePath.StartsWith("http", StringComparison.InvariantCultureIgnoreCase))
+            if (baseUrl.StartsWith("http://", StringComparison.InvariantCultureIgnoreCase))
                 Schema = Schema.Http;
-            else if (basePath.StartsWith("https", StringComparison.InvariantCultureIgnoreCase))
+            else if (baseUrl.StartsWith("https://", StringComparison.InvariantCultureIgnoreCase))
                 Schema = Schema.Https;
             else
-                throw new ArgumentException("base path must have only HTTPS or HTTP schema", nameof(basePath));
+                throw new ArgumentException("base path must have only HTTPS or HTTP schema", nameof(baseUrl));
 
             _arena.Disposed += OnDispose;
         }
@@ -48,40 +52,43 @@ namespace Simple.Url
                 ThrowOutOfMemory();
 
             pathSegment.CopyTo(storedPathSegment);
-            _urlPathSegments.Add((storedPathSegment.ToIntPtr(), pathSegment.Length));
+            _urlPathSegments.Add(storedPathSegment.AsStringSegment());
         }
 
         public string GenerateUrl()
         {
             var length = 
-                _baseUrl.size +
-                _urlPathSegments.Sum(x => x.size) +  //path size
+                _baseUrl.Length +  //path size
                 _urlPathSegments.Count; //path separators
+
+            //note: this can be done with Linq's Sum(), but that will do delegate allocation
+            for(int i = 0; i < _urlPathSegments.Count; i++)
+                length += _urlPathSegments[i].Length;
 
             return string.Create(length, (_baseUrl, _urlPathSegments), 
                 (Span<char> output,
-                        ((IntPtr ptr, int size) baseUrl, 
-                            List<(IntPtr ptr, int size)> segments) urlParts) =>
+                        (StringSegment baseUrl, 
+                         List<StringSegment> segments) urlParts) =>
                 {
                     var offset = 0;
                     var separatorAsSpan = UrlPathSeparator.AsSpan();
 
                     urlParts.baseUrl.AsSpan().CopyTo(output.Slice(offset));
-                    offset += urlParts.baseUrl.size;
+                    offset += urlParts.baseUrl.Length;
 
-                    separatorAsSpan.CopyTo(output.Slice(offset++)); //path separator after base url
+                    if(urlParts.segments.Count > 0) //in an edge case, there is only a base path and no path
+                        separatorAsSpan.CopyTo(output.Slice(offset++)); //path separator after base url
 
                     for (int i = 0; i < urlParts.segments.Count; i++)
                     {
                         var currentSpan = urlParts.segments[i].AsSpan();
 
                         currentSpan.CopyTo(output.Slice(offset));
-                        offset += urlParts.segments[i].size;
+                        offset += urlParts.segments[i].Length;
 
                         if(i < urlParts.segments.Count - 1)
                             separatorAsSpan.CopyTo(output.Slice(offset++));
                     }
-
                 });
         }
 

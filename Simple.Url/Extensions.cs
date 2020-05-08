@@ -2,9 +2,12 @@
 
 namespace Simple.Url
 {
-    internal static class Extensions
+    public static class Extensions
     {
-        public static unsafe Span<char> AsSpan(this (IntPtr ptr, int size) stringAsPtr) => 
-            new Span<char>(stringAsPtr.ptr.ToPointer(), stringAsPtr.size);
+        //implicit conversion operator here
+        public static unsafe StringSegment AsStringSegment(this ReadOnlySpan<char> span) => span;
+
+        //implicit conversion operator here
+        public static unsafe StringSegment AsStringSegment(this Span<char> span) => span;
     }
 }
