@@ -25,7 +25,10 @@ namespace Simple.Url
         /// <exception cref="T:System.ArgumentException">base path must have only HTTPS or HTTP schema</exception>
         public Url(Arena.Arena arena, ReadOnlySpan<char> basePath)
         {
-            _arena = arena;
+            _arena = arena ?? throw new ArgumentNullException(nameof(arena));
+            if(_arena.IsDisposed)
+                throw new ObjectDisposedException(nameof(arena));
+
             _urlPathSegments = Cache.SegmentListCache.Get();
             _baseUrl = (basePath.ToIntPtr(), basePath.Length);
             

@@ -10,6 +10,8 @@ EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "CI", "CI", "{4A17EC20-4961-4D48-AD93-A245DCC7845C}"
 	ProjectSection(SolutionItems) = preProject
 		.travis.yml = .travis.yml
+		tools\travis-ci-build.sh = tools\travis-ci-build.sh
+		tools\travis-ci-install-sonar.sh = tools\travis-ci-install-sonar.sh
 	EndProjectSection
 EndProject
 Global
