@@ -1,5 +1,4 @@
-﻿using Simple.Uri.Parser;
-using Xunit;
+﻿using Xunit;
 
 namespace Simple.Uri.Tests
 {

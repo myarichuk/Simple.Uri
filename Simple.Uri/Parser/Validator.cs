@@ -1,7 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Runtime.CompilerServices;
 
-namespace Simple.Uri.Parsing
+namespace Simple.Uri.Parser
 {
     internal static class Validator
     {

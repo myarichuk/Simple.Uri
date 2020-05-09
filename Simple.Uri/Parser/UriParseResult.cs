@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace Simple.Uri
+namespace Simple.Uri.Parser
 {
     //URI = scheme:[//[user:password@]host[:port]][/]path[?query][#fragment]
     public ref struct UriParseResult

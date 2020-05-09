@@ -1,5 +1,4 @@
-﻿using Simple.Uri.Parser;
-using System;
+﻿using System;
 
 namespace Simple.Uri
 {
