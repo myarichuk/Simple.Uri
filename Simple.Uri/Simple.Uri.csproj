@@ -15,13 +15,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <None Remove="Simple.Url.ruleset" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <PackageReference Include="Microsoft.Extensions.ObjectPool" Version="3.1.3" />
-    <PackageReference Include="Simple.Arena" Version="1.7.1" />
-    <PackageReference Include="System.Runtime.CompilerServices.Unsafe" Version="4.7.1" />
+    <None Remove="Simple.Uri.ruleset" />
   </ItemGroup>
 
 </Project>

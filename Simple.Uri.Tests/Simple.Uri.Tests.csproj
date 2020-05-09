@@ -21,7 +21,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\Simple.Url\Simple.Url.csproj" />
+    <ProjectReference Include="..\Simple.Uri\Simple.Uri.csproj" />
   </ItemGroup>
 
 </Project>
