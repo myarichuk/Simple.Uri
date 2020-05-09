@@ -5,8 +5,8 @@ namespace Simple.Uri.Parser
 {
     internal static class Validator
     {
-        public readonly static HashSet<char> Reserved = new HashSet<char> { ';', '/', '?', ':', '@', '=', '&' };
-        public readonly static HashSet<char> Special = new HashSet<char> { '$', '-', '_', '.', '+', '!', '*', '\'', '(', ')' };
+        public static readonly HashSet<char> Reserved = new HashSet<char> { ';', '/', '?', ':', '@', '=', '&' };
+        public static readonly HashSet<char> Special = new HashSet<char> { '$', '-', '_', '.', '+', '!', '*', '\'', '(', ')' };
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static bool IsValidForSchema(char c) => char.IsLetter(c);
