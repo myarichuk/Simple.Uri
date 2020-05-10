@@ -1,6 +1,7 @@
 ﻿using Superpower;
 using Superpower.Model;
 using Superpower.Parsers;
+// ReSharper disable EventExceptionNotDocumented
 
 namespace Simple.Uri.Parser
 {
@@ -77,7 +78,7 @@ namespace Simple.Uri.Parser
         public static TokenListParser<UriToken, RawUriParseResult> Instance { get; } =
             from schema in Schema
             from authority in Authority.OptionalOrDefault()
-            from path in Path
+            from path in Path.OptionalOrDefault()
             from query in Query.OptionalOrDefault()
             from fragment in Fragment.OptionalOrDefault()
             select new RawUriParseResult
