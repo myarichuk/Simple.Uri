@@ -40,7 +40,7 @@ namespace Simple.Uri.Parser
                                            .OptionalOrDefault().Try()
             select new AuthorityParseResult
             {
-                User = userInfo.user,
+                Username = userInfo.user,
                 Password = userInfo.password,
                 Host = host,
                 Port = port

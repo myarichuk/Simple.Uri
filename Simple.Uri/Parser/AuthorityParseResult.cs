@@ -4,7 +4,7 @@ namespace Simple.Uri.Parser
 {
     public struct AuthorityParseResult
     {
-        public Token<UriToken> User { get; set; }
+        public Token<UriToken> Username { get; set; }
 
         public Token<UriToken> Password { get; set; }
 
@@ -12,6 +12,6 @@ namespace Simple.Uri.Parser
 
         public Token<UriToken> Port { get; set; }
 
-        public bool HasResult() => Host.HasValue || User.HasValue || Password.HasValue;
+        public bool HasResult() => Host.HasValue || Username.HasValue || Password.HasValue;
     }
 }

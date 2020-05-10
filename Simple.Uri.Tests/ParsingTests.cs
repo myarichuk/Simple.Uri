@@ -30,6 +30,27 @@ namespace Simple.Uri.Tests
         }
 
         [Fact]
+        public void Can_parse_url_with_high_level_api()
+        {
+            var parseResult = Uri.Parse("foobar://usr:pwd@hostname.com:1234/this/is/a/test?foo=bar&x=y#fragment");
+            Assert.Equal("foobar", parseResult.Scheme.ToString());
+            Assert.Equal("usr", parseResult.Username.ToString());
+            Assert.Equal("pwd", parseResult.Password.ToString());
+            Assert.Equal("hostname.com", parseResult.Host.ToString());
+            Assert.Equal("1234", parseResult.Port.ToString());
+
+            Assert.Equal(new []{"this", "is", "a", "test"}, parseResult.Path.AsEnumerable());
+
+            Assert.Equal("foo", parseResult.Query[0].Name.ToString());
+            Assert.Equal("bar", parseResult.Query[0].Value.ToString());
+
+            Assert.Equal("x", parseResult.Query[1].Name.ToString());
+            Assert.Equal("y", parseResult.Query[1].Value.ToString());
+
+            Assert.Equal("fragment", parseResult.Fragment.ToString());
+        }
+
+        [Fact]
         public void Can_parse_url()
         {
             var tokenizationResult= UriTokenizer.Instance.TryTokenize("foobar://usr:pwd@hostname.com:1234/this/is/a/test?foo=bar&x=y#fragment");
@@ -39,7 +60,7 @@ namespace Simple.Uri.Tests
             Assert.True(parseResult.HasValue);
 
             Assert.Equal("foobar", parseResult.Value.Schema.ToStringValue());
-            Assert.Equal("usr", parseResult.Value.Authority.User.ToStringValue());
+            Assert.Equal("usr", parseResult.Value.Authority.Username.ToStringValue());
             Assert.Equal("pwd", parseResult.Value.Authority.Password.ToStringValue());
             Assert.Equal("hostname.com", parseResult.Value.Authority.Host.ToStringValue());
             Assert.Equal("1234", parseResult.Value.Authority.Port.ToStringValue());
@@ -137,7 +158,7 @@ namespace Simple.Uri.Tests
             Assert.True(parseResult.HasValue);
 
             Assert.Equal("foobar", parseResult.Value.Schema.ToStringValue());
-            Assert.False(parseResult.Value.Authority.User.HasValue);
+            Assert.False(parseResult.Value.Authority.Username.HasValue);
             Assert.False(parseResult.Value.Authority.Password.HasValue);
             Assert.Equal("hostname.com", parseResult.Value.Authority.Host.ToStringValue());
             Assert.False(parseResult.Value.Authority.Port.HasValue);
@@ -162,7 +183,7 @@ namespace Simple.Uri.Tests
             Assert.True(parseResult.HasValue);
 
             Assert.Equal("foobar", parseResult.Value.Schema.ToStringValue());
-            Assert.Equal("usr", parseResult.Value.Authority.User.ToStringValue());
+            Assert.Equal("usr", parseResult.Value.Authority.Username.ToStringValue());
             Assert.False(parseResult.Value.Authority.Password.HasValue);
             Assert.Equal("hostname.com", parseResult.Value.Authority.Host.ToStringValue());
             Assert.Equal("1234", parseResult.Value.Authority.Port.ToStringValue());
