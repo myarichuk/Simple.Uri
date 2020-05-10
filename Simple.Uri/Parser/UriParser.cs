@@ -34,7 +34,7 @@ namespace Simple.Uri.Parser
             from begin in Token.EqualTo(UriToken.DoubleSlash)
             from userInfo in UserInfo.Try()
                         .Or(UserInfoWithoutPassword.Try()).OptionalOrDefault()
-            from host in Token.EqualTo(UriToken.String)
+            from host in Token.EqualTo(UriToken.String) //add support & validation for both hostnames, ipv4 and ipv6 addresses
             from port in Token.EqualTo(UriToken.Colon)
                                            .IgnoreThen(Token.EqualTo(UriToken.Digits))
                                            .OptionalOrDefault().Try()
