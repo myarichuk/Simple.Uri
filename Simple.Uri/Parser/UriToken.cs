@@ -6,7 +6,7 @@ namespace Simple.Uri.Parser
     {
         None,
 
-        [Token(Category="delimiter", Example = "/")]
+        [Token(Category="path delimiter", Example = "/")]
         Slash,
 
         [Token(Category="delimiter", Example = "//")]
@@ -18,7 +18,7 @@ namespace Simple.Uri.Parser
         [Token(Category="delimiter", Example = "::")]
         DoubleColon,
 
-        [Token(Category="delimiter", Example = "#")]
+        [Token(Category="fragment delimiter", Example = "#")]
         Hash,
 
         [Token(Category="delimiter", Example = ".")]
@@ -27,28 +27,31 @@ namespace Simple.Uri.Parser
         [Token(Category="delimiter", Example = "@")]
         At,
 
-        [Token(Category="delimiter", Example = "?")]
+        [Token(Category="query delimiter", Example = "?")]
         Question,
 
-        [Token(Category="delimiter", Example = "[")]
+        [Token(Category="ipv6 delimiter", Example = "[")]
         LBracket,
 
-        [Token(Category="delimiter", Example = "]")]
+        [Token(Category="ipv6 delimiter", Example = "]")]
         RBracket,
 
-        [Token(Category="param delimiter", Example = ";")]
+        [Token(Category="parameter delimiter", Example = ";")]
         Semicolon,
 
-        [Token(Category="param delimiter", Example = "&")]
+        [Token(Category="parameter delimiter", Example = "&")]
         Ampersand,
 
-        [Token(Category="param delimiter", Example = "=")]
+        [Token(Category="parameter delimiter", Example = "=")]
         Equal,
 
-        [Token(Category = "uri segment")]
+        [Token(Category = "string")]
         String,
 
-        [Token(Category = "uri segment")]
+        [Token(Category = "digit")]
         Digits,
+
+        [Token(Category = "whitespace")]
+        Whitespace,
     }
 }

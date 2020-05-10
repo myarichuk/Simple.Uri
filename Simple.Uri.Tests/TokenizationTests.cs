@@ -4,10 +4,10 @@ using Xunit;
 
 namespace Simple.Uri.Tests
 {
-    public class UrlParsingTests
+    public class TokenizationTests
     {
         [Fact]
-        public void Can_match_encoded_character()
+        public void Can_tokenize_encoded_character()
         {
             Assert.False(UriTokenizer.EncodedCharacter.TryParse("ABC").HasValue);
             Assert.False(UriTokenizer.EncodedCharacter.TryParse("%").HasValue);
@@ -17,14 +17,15 @@ namespace Simple.Uri.Tests
             Assert.True(UriTokenizer.EncodedCharacter.TryParse("%244f").HasValue);
         }
 
-        //[Fact]
-        //public void Can_parse_scheme()
-        //{
-        //    Assert.True(ParserHelper.TryParseSchema("http://foobar.com:1234", out var parseResult, out var errorMessage));
-        //    Assert.Equal("http", parseResult.ToString());
-
-        //    Assert.True(ParserHelper.TryParseSchema("xyzxyz://foobar.com:1234", out parseResult, out errorMessage));
-        //    Assert.Equal("xyzxyz", parseResult.ToString());
-        //}
+        [Fact]
+        public void Can_tokenize_string()
+        {
+            var res = UriTokenizer.String.TryParse("123ABC");
+            Assert.False(UriTokenizer.String.TryParse("123ABC").HasValue);
+            Assert.False(UriTokenizer.String.TryParse("123ABC:").HasValue);
+            Assert.False(UriTokenizer.String.TryParse("123:ABC").HasValue);
+            Assert.True(UriTokenizer.String.TryParse("A12BC12").HasValue);
+            Assert.True(UriTokenizer.String.TryParse("A%12BC12").HasValue);
+        }
     }
 }
