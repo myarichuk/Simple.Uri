@@ -1,43 +1,34 @@
 ﻿using System;
-using System.Linq;
-using Simple.Uri.Parser;
-using Superpower;
-using UriParser = Simple.Uri.Parser.UriParser;
-
 namespace Simple.Uri
 {
 
     //scheme:[//[user:password@]host[:port]][/]path[?query][#fragment]
-    public static class Uri
+    public ref struct Uri
     {
+        private UriInfo UriInfo { get; set; }
+        private readonly static UriParser Parser = new UriParser();
+
         /// <exception cref="T:System.InvalidOperationException">Failed to tokenize the uri.</exception>
         /// <exception cref="T:System.ArgumentNullException"><paramref name="uri"/> is <see langword="null"/></exception>
         /// <exception cref="T:Superpower.ParseException">The tokenizer could not correctly perform tokenization.</exception>
-        public static UriParseResult Parse(string uri)
+        public static UriInfo Parse(ReadOnlySpan<char> uri)
         {
-            if (string.IsNullOrWhiteSpace(uri)) 
+            if (uri.IsEmpty || uri.IsWhiteSpace()) 
                 throw new ArgumentNullException(nameof(uri));
 
-            var tokenizeResult = UriTokenizer.Instance.TryTokenize(uri);
-            if (!tokenizeResult.HasValue)
-                throw new InvalidOperationException(tokenizeResult.ErrorMessage);
+            UriInfo uriInfo = default;
 
+            var result = Parser.TryParseScheme(uri, out var scheme);
+            if(!result.success && !result.error.IsEmpty)
+                throw new InvalidOperationException(result.error.ToString());
 
-            var parseResult = UriParser.Instance.TryParse(tokenizeResult.Value);
-            if (!parseResult.HasValue)
-                throw new InvalidOperationException(parseResult.ErrorMessage);
+            uriInfo.Scheme = scheme;
+            
+            result = Parser.TryParseAuthority(uri, ref uriInfo);
+            if(!result.success && !result.error.IsEmpty)
+                throw new InvalidOperationException(result.error.ToString());
 
-            return new UriParseResult
-            {
-                Scheme = parseResult.Value.Schema.ToSpan(),
-                Host = parseResult.Value.Authority.Host.ToSpan(),
-                Port = parseResult.Value.Authority.Port.ToSpan(),
-                Username = parseResult.Value.Authority.Username.ToSpan(),
-                Password = parseResult.Value.Authority.Password.ToSpan(),
-                Path = new PathSegmentCollection(parseResult.Value.Path),
-                Query = new QueryParameterCollection(parseResult.Value.Query),
-                Fragment = parseResult.Value.Fragment.ToSpan()
-            };
+            return uriInfo;
         }
 
     }

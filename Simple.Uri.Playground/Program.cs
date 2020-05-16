@@ -30,7 +30,11 @@ namespace Simple.Uri.Playground
             }
         }
 
-        
-        static void Main(string[] args) => BenchmarkRunner.Run<Program>();
+
+        static void Main(string[] args)
+        {
+
+            BenchmarkRunner.Run<Program>();
+        }
     }
 }
