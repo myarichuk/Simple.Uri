@@ -10,6 +10,8 @@ namespace Simple.Uri
 
         ///////////
         //authority part
+        public ReadOnlySpan<char> Authority { get; set; }
+
         public ReadOnlySpan<char> Username { get; set; }
 
         public ReadOnlySpan<char> Password { get; set; }
@@ -19,9 +21,9 @@ namespace Simple.Uri
         public ReadOnlySpan<char> Port { get; set; }
         ///////////
         
-        public ReadOnlySpan<Memory<char>> Path { get; set; }
+        public ReadOnlySpan<char> Path { get; set; }
 
-        public ReadOnlySpan<(Memory<char> Name, Memory<char> Value)> Query { get; set; }
+        public ReadOnlySpan<char> Query { get; set; }
 
         public ReadOnlySpan<char> Fragment { get; set; }
     }

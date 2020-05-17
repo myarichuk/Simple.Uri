@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Runtime.InteropServices;
 
 namespace Simple.Uri
 {
@@ -13,21 +12,27 @@ namespace Simple.Uri
         private const string SegmentDelimiterToken = ":";
         private const string UsernamePasswordEndToken = "@";
 
-        public (bool success, ReadOnlyMemory<char> error) TryParseAuthority(ReadOnlySpan<char> uri, ref UriInfo uriInfo)
+        public (bool success, ReadOnlyMemory<char> error) TryParseAuthority(ReadOnlySpan<char> uri, out int authorityEndIndex, ref UriInfo uriInfo)
         {
+            authorityEndIndex = -1;
             if (!TryFindFirstOccurenceOf(uri, AuthorityDelimiterToken, out var authorityStartIndex))
                 return (false, default);
 
             ReadOnlySpan<char> authoritySlice;
             var uriWithoutScheme = uri.Slice(authorityStartIndex + AuthorityDelimiterToken.Length);
-            if (TryFindFirstOccurenceOf(uriWithoutScheme, AuthorityEndTokenA, out var authorityEndIndex) ||
+            if (TryFindFirstOccurenceOf(uriWithoutScheme, AuthorityEndTokenA, out authorityEndIndex) ||
                 TryFindFirstOccurenceOf(uriWithoutScheme, AuthorityEndTokenB, out authorityEndIndex))
                 authoritySlice = uriWithoutScheme.Slice(0, authorityEndIndex);
             else
+            {
                 authoritySlice = uriWithoutScheme;
+                authorityEndIndex = uriWithoutScheme.Length;
+            }
+
+            uriInfo.Authority = authoritySlice;
 
             ActuallyParseAuthority(authoritySlice, ref uriInfo);
-
+            authorityEndIndex += authorityStartIndex + AuthorityDelimiterToken.Length; //make it absolute
             return (true, default);
         }
 

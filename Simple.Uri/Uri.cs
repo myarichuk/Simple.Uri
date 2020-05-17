@@ -24,9 +24,16 @@ namespace Simple.Uri
 
             uriInfo.Scheme = scheme;
             
-            result = Parser.TryParseAuthority(uri, ref uriInfo);
+            result = Parser.TryParseAuthority(uri, out var authorityEndIndex, ref uriInfo);
             if(!result.success && !result.error.IsEmpty)
                 throw new InvalidOperationException(result.error.ToString());
+
+
+            result = Parser.TryParsePath(uri, authorityEndIndex, out var pathEndIndex, ref uriInfo);
+            if(!result.success && !result.error.IsEmpty)
+                throw new InvalidOperationException(result.error.ToString());
+
+            //TODO: add verification that there are no invalid characters at paths
 
             return uriInfo;
         }
