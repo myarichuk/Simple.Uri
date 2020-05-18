@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 
 namespace Simple.Uri
 {
@@ -9,10 +10,11 @@ namespace Simple.Uri
         private const string QueryDelimiter = "?";
 
         //assuming restOfUri is a slice of the URI after authority
-        public (bool success, ReadOnlyMemory<char> error) TryParsePath(ReadOnlySpan<char> uri, int authorityEndIndex, out int pathEndIndex, ref UriInfo uriInfo)
+        public (bool success, ReadOnlyMemory<char> error, ReadOnlyMemory<char> pathAsMemory) TryParsePath(ReadOnlyMemory<char> uri, int authorityEndIndex, out int pathEndIndex, ref UriInfo uriInfo)
         {
+            
             var restOfUri = uri.Slice(authorityEndIndex);
-            ReadOnlySpan<char> pathSlice;
+            ReadOnlyMemory<char> pathSlice;
             if(TryFindFirstOccurenceOf(restOfUri, QueryDelimiter, out pathEndIndex) ||
                 TryFindFirstOccurenceOf(restOfUri, FragmentDelimiter, out pathEndIndex))
             {
@@ -21,12 +23,26 @@ namespace Simple.Uri
             else
                 pathSlice = restOfUri.Slice(PathSeparatorToken.Length);
 
-            if(!pathSlice.IsEmpty && pathSlice[^1] == PathSeparatorToken[0]) //ensure there is no trailing slashes
+            if(!pathSlice.IsEmpty && pathSlice.Span[^1] == PathSeparatorToken[0]) //ensure there is no trailing slashes
                 pathSlice = pathSlice[0 .. ^1];
 
-            uriInfo.Path = pathSlice;
+            uriInfo.Path = pathSlice.Span;
 
-            return (true, default);
+            return (true, default, pathSlice);
+        }
+
+        public IEnumerable<ReadOnlyMemory<char>> ParsePathIntoCollection(ReadOnlyMemory<char> pathSlice)
+        {
+            var current = pathSlice;
+            while(TryFindFirstOccurenceOf(current, PathSeparatorToken, out var separatorIndex))
+            {
+                var pathSegment = current.Slice(0, separatorIndex);
+                current = current.Slice(separatorIndex + PathSeparatorToken.Length);
+                
+                yield return pathSegment;
+            }
+
+            yield return current;
         }
     }
 }

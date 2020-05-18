@@ -1,5 +1,6 @@
 ﻿using BenchmarkDotNet.Attributes;
 using BenchmarkDotNet.Running;
+using System;
 
 namespace Simple.Uri.Playground
 {
@@ -25,7 +26,7 @@ namespace Simple.Uri.Playground
         {
             //for (int i = 0; i < 1_000_000; i++)
             {
-                _ = Uri.Parse(_url);
+                _ = Uri.Parse(_url.AsMemory());
             }
         }
 

@@ -15,5 +15,11 @@ namespace Simple.Uri
             index = uriSegment.IndexOf(token);            
             return index >= 0;
         }
+
+        public bool TryFindFirstOccurenceOf(in ReadOnlyMemory<char> uriSegment, ReadOnlySpan<char> token, out int index)
+        {
+            index = uriSegment.Span.IndexOf(token);            
+            return index >= 0;
+        }
     }
 }

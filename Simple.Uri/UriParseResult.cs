@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 
 namespace Simple.Uri
 {
@@ -22,6 +23,8 @@ namespace Simple.Uri
         ///////////
         
         public ReadOnlySpan<char> Path { get; set; }
+
+        public IEnumerable<ReadOnlyMemory<char>> PathSegments { get; set; }
 
         public ReadOnlySpan<char> Query { get; set; }
 

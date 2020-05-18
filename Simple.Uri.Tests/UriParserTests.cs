@@ -1,4 +1,6 @@
-﻿using Xunit;
+﻿using System;
+using System.Linq;
+using Xunit;
 
 namespace Simple.Uri.Tests
 {
@@ -124,7 +126,7 @@ namespace Simple.Uri.Tests
 
             Assert.True(authoritySuccess); //sanity check
 
-            var (pathSuccess, _) = _parser.TryParsePath(uri, authorityEndIndex, out var pathEndIndex, ref uriInfo);
+            var (pathSuccess, _, _) = _parser.TryParsePath(uri.AsMemory(), authorityEndIndex, out var pathEndIndex, ref uriInfo);
             Assert.True(pathSuccess);
             Assert.Equal("path/foo/bar", uriInfo.Path.ToString());
         }
@@ -138,7 +140,7 @@ namespace Simple.Uri.Tests
 
             Assert.True(authoritySuccess); //sanity check
 
-            var (pathSuccess, _) = _parser.TryParsePath(uri, authorityEndIndex, out var pathEndIndex, ref uriInfo);
+            var (pathSuccess, _, _) = _parser.TryParsePath(uri.AsMemory(), authorityEndIndex, out var pathEndIndex, ref uriInfo);
             Assert.True(pathSuccess);
             Assert.Equal("path/foo/bar", uriInfo.Path.ToString());
         }
@@ -152,7 +154,7 @@ namespace Simple.Uri.Tests
 
             Assert.True(authoritySuccess); //sanity check
 
-            var (pathSuccess, _) = _parser.TryParsePath(uri, authorityEndIndex, out var pathEndIndex, ref uriInfo);
+            var (pathSuccess, _, _) = _parser.TryParsePath(uri.AsMemory(), authorityEndIndex, out var pathEndIndex, ref uriInfo);
             Assert.True(pathSuccess);
             Assert.Equal("path/foo/bar", uriInfo.Path.ToString());
         }
@@ -166,7 +168,7 @@ namespace Simple.Uri.Tests
 
             Assert.True(authoritySuccess); //sanity check
 
-            var (pathSuccess, _) = _parser.TryParsePath(uri, authorityEndIndex, out var pathEndIndex, ref uriInfo);
+            var (pathSuccess, _, _) = _parser.TryParsePath(uri.AsMemory(), authorityEndIndex, out var pathEndIndex, ref uriInfo);
             Assert.True(pathSuccess);
             Assert.Equal("", uriInfo.Path.ToString());
         }
@@ -180,7 +182,7 @@ namespace Simple.Uri.Tests
 
             Assert.True(authoritySuccess); //sanity check
 
-            var (pathSuccess, _) = _parser.TryParsePath(uri, authorityEndIndex, out var pathEndIndex, ref uriInfo);
+            var (pathSuccess, _, _) = _parser.TryParsePath(uri.AsMemory(), authorityEndIndex, out var pathEndIndex, ref uriInfo);
             Assert.True(pathSuccess);
             Assert.Equal("", uriInfo.Path.ToString());
         }
@@ -194,10 +196,25 @@ namespace Simple.Uri.Tests
 
             Assert.True(authoritySuccess); //sanity check
 
-            var (pathSuccess, _) = _parser.TryParsePath(uri, authorityEndIndex, out var pathEndIndex, ref uriInfo);
+            var (pathSuccess, _, _) = _parser.TryParsePath(uri.AsMemory(), authorityEndIndex, out var pathEndIndex, ref uriInfo);
 
             Assert.True(pathSuccess);
             Assert.Equal("path/foo/bar", uriInfo.Path.ToString());
+        }
+
+        [Fact]
+        public void Should_parse_path_to_collection_correctly()
+        {
+            var path = "foo/bar/foobar/baz";
+            var pathSegments = _parser.ParsePathIntoCollection(path.AsMemory()).ToArray();
+            
+            Assert.Equal(4, pathSegments.Length);
+            Assert.Equal(new [] { "foo", "bar", "foobar", "baz"}, pathSegments.Select(x => x.ToString()));
+
+            var path2 = "foo"; //edge case
+            var pathSegments2 = _parser.ParsePathIntoCollection(path2.AsMemory()).ToArray();
+            Assert.Single(pathSegments2);
+            Assert.Equal("foo", pathSegments2[0].ToString());
         }
 
     }
